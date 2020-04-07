@@ -7,11 +7,11 @@ from redbot.core.bot import Red
 from redbot.core.i18n import Translator, cog_i18n
 from redbot.core.utils.chat_formatting import pagify
 
-_ = Translator("Filter", __file__)
+_ = Translator("FilterAll", __file__)
 
 
 @cog_i18n(_)
-class Filter(commands.Cog):
+class FilterAll(commands.Cog):
     """Filter unwanted words and phrases from text channels."""
 
     def __init__(self, bot: Red):
@@ -94,7 +94,7 @@ class Filter(commands.Cog):
     @commands.group(name="filter")
     @commands.guild_only()
     @checks.mod_or_permissions(manage_messages=True)
-    async def _filter(self, ctx: commands.Context):
+    async def _filterall(self, ctx: commands.Context):
         """Add or remove words from server filter.
 
         Use double quotes to add or remove sentences.
@@ -115,8 +115,8 @@ class Filter(commands.Cog):
                 except discord.Forbidden:
                     await ctx.send(_("I can't send direct messages to you."))
 
-    @_filter.group(name="channel")
-    async def _filter_channel(self, ctx: commands.Context):
+    @_filterall.group(name="channel")
+    async def _filterall_channel(self, ctx: commands.Context):
         """Add or remove words from channel filter.
 
         Use double quotes to add or remove sentences.
@@ -137,7 +137,7 @@ class Filter(commands.Cog):
                 except discord.Forbidden:
                     await ctx.send(_("I can't send direct messages to you."))
 
-    @_filter_channel.command("add")
+    @_filterall_channel.command("add")
     async def filter_channel_add(self, ctx: commands.Context, *, words: str):
         """Add words to the filter.
 
@@ -163,14 +163,14 @@ class Filter(commands.Cog):
                     tmp = ""
                 else:
                     tmp += word + " "
-        added = await self.add_to_filter(channel, word_list)
+        added = await self.add_to_filterall(channel, word_list)
         if added:
             self.invalidate_cache(ctx.guild, ctx.channel)
             await ctx.send(_("Words added to filter."))
         else:
             await ctx.send(_("Words already in the filter."))
 
-    @_filter_channel.command("remove")
+    @_filterall_channel.command("remove")
     async def filter_channel_remove(self, ctx: commands.Context, *, words: str):
         """Remove words from the filter.
 
@@ -196,14 +196,14 @@ class Filter(commands.Cog):
                     tmp = ""
                 else:
                     tmp += word + " "
-        removed = await self.remove_from_filter(channel, word_list)
+        removed = await self.remove_from_filterall(channel, word_list)
         if removed:
             await ctx.send(_("Words removed from filter."))
             self.invalidate_cache(ctx.guild, ctx.channel)
         else:
             await ctx.send(_("Those words weren't in the filter."))
 
-    @_filter.command(name="add")
+    @_filterall.command(name="add")
     async def filter_add(self, ctx: commands.Context, *, words: str):
         """Add words to the filter.
 
@@ -229,14 +229,14 @@ class Filter(commands.Cog):
                     tmp = ""
                 else:
                     tmp += word + " "
-        added = await self.add_to_filter(server, word_list)
+        added = await self.add_to_filterall(server, word_list)
         if added:
             self.invalidate_cache(ctx.guild)
             await ctx.send(_("Words successfully added to filter."))
         else:
             await ctx.send(_("Those words were already in the filter."))
 
-    @_filter.command(name="delete", aliases=["remove", "del"])
+    @_filterall.command(name="delete", aliases=["remove", "del"])
     async def filter_remove(self, ctx: commands.Context, *, words: str):
         """Remove words from the filter.
 
@@ -262,14 +262,14 @@ class Filter(commands.Cog):
                     tmp = ""
                 else:
                     tmp += word + " "
-        removed = await self.remove_from_filter(server, word_list)
+        removed = await self.remove_from_filterall(server, word_list)
         if removed:
             self.invalidate_cache(ctx.guild)
             await ctx.send(_("Words successfully removed from filter."))
         else:
             await ctx.send(_("Those words weren't in the filter."))
 
-    @_filter.command(name="names")
+    @_filterall.command(name="names")
     async def filter_names(self, ctx: commands.Context):
         """Toggle name and nickname filtering.
 
@@ -291,7 +291,7 @@ class Filter(commands.Cog):
                 if guild in keyset:
                     self.pattern_cache.pop(keyset, None)
 
-    async def add_to_filter(
+    async def add_to_filterall(
         self, server_or_channel: Union[discord.Guild, discord.TextChannel], words: list
     ) -> bool:
         added = False
@@ -311,7 +311,7 @@ class Filter(commands.Cog):
 
         return added
 
-    async def remove_from_filter(
+    async def remove_from_filterall(
         self, server_or_channel: Union[discord.Guild, discord.TextChannel], words: list
     ) -> bool:
         removed = False
@@ -361,10 +361,10 @@ class Filter(commands.Cog):
             self.pattern_cache[(guild, channel)] = pattern
 
         if pattern:
-            hits = "Hit" "|= set(pattern.findall(text))
+            hits = pattern
         return hits
 
-    async def check_filter(self, message: discord.Message):
+    async def check_filterall(self, message: discord.Message):
         server = message.guild
         author = message.author
 
@@ -425,7 +425,7 @@ class Filter(commands.Cog):
         if await self.bot.is_automod_immune(message):
             return
 
-        await self.check_filter(message)
+        await self.check_filterall(message)
 
     @commands.Cog.listener()
     async def on_message_edit(self, _prior, message):
@@ -436,13 +436,13 @@ class Filter(commands.Cog):
     @commands.Cog.listener()
     async def on_member_update(self, before: discord.Member, after: discord.Member):
         if before.display_name != after.display_name:
-            await self.maybe_filter_name(after)
+            await self.maybe_filterall_name(after)
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
-        await self.maybe_filter_name(member)
+        await self.maybe_filterall_name(member)
 
-    async def maybe_filter_name(self, member: discord.Member):
+    async def maybe_filterall_name(self, member: discord.Member):
         if not member.guild.me.guild_permissions.manage_nicknames:
             return  # No permissions to manage nicknames, so can't do anything
         if member.top_role >= member.guild.me.top_role:

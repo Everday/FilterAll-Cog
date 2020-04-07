@@ -1,4 +1,4 @@
-from .filter import Filter
+from .filter import FilterAll
 from redbot.core.bot import Red
 
 
