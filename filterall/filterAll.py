@@ -45,7 +45,7 @@ class FilterAll(commands.Cog):
         except RuntimeError:
             pass
 
-    @commands.group()
+    @commands.group(name="filtersetDEAD")
     @commands.guild_only()
     @checks.admin_or_permissions(manage_guild=True)
     async def filterset(self, ctx: commands.Context):
