@@ -12,7 +12,7 @@ _ = Translator("FilterAll", __file__)
 
 @cog_i18n(_)
 class FilterAll(commands.Cog):
-    """Filter unwanted words and phrases from text channels."""
+    """Filter all words and phrases from text channels."""
 
     def __init__(self, bot: Red):
         super().__init__()
@@ -91,7 +91,7 @@ class FilterAll(commands.Cog):
             await self.settings.guild(ctx.guild).filterban_time.set(timeframe)
             await ctx.send(_("Count and time have been set."))
 
-    @commands.group(name="filter")
+    @commands.group(name="filterall")
     @commands.guild_only()
     @checks.mod_or_permissions(manage_messages=True)
     async def _filterall(self, ctx: commands.Context):
